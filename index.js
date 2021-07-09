@@ -1,3 +1,5 @@
+const serviceAccount = require('./private/private.json');
+const admin = require('firebase-admin');
 const jsonServer = require('json-server')
 const server = jsonServer.create()
 const router = jsonServer.router('db.json')
@@ -6,6 +8,11 @@ const { generate } = require('./generate-report.js');
 // Set default middlewares (logger, static, cors and no-cache)
 server.use(middlewares)
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+const db = admin.firestore();
 
 server.get('/generate-report', (req, res) => {
   generate().then(result => {
@@ -31,6 +38,9 @@ server.use(jsonServer.bodyParser)
 server.use((req, res, next) => {
   if (req.method === 'POST') {
     req.body.createdAt = Date.now()
+
+    const docRef = db.collection('temp').doc(Date.now());
+    await docRef.set(req.body);
   }
   // Continue to JSON Server router
   next()
