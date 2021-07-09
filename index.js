@@ -39,8 +39,7 @@ server.use((req, res, next) => {
   if (req.method === 'POST') {
     req.body.createdAt = Date.now()
 
-    const docRef = db.collection('temp').doc(Date.now());
-    await docRef.set(req.body);
+    db.collection('temp').add(req.body)
   }
   // Continue to JSON Server router
   next()
